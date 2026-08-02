@@ -34,25 +34,29 @@ class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
+    private RegisterRequest request(String phone) {
+        return new RegisterRequest("Asha Rao", "Asha@Example.com", phone, "StrongPass123!");
+    }
+
     @Test
-    void register_lowercasesEmail_andStoresBcryptHash() {
+    void register_lowercasesEmail_andStoresBcryptHash_andPhone() {
         when(userRepository.existsByEmail(any())).thenReturn(false);
         when(userRepository.existsByFullName(any())).thenReturn(false);
+        when(userRepository.existsByPhone(any())).thenReturn(false);
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
             User user = invocation.getArgument(0);
             user.setId(1);
             return user;
         });
 
-        RegisterRequest request = new RegisterRequest("Asha Rao", "Asha@Example.com", "StrongPass123!");
-
-        RegisterResponse response = userService.register(request);
+        RegisterResponse response = userService.register(request("8000000001"));
 
         ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(captor.capture());
         User saved = captor.getValue();
 
         assertThat(saved.getEmail()).isEqualTo("asha@example.com");
+        assertThat(saved.getPhone()).isEqualTo("8000000001");
         assertThat(saved.getRole()).isEqualTo(Role.CUSTOMER);
         assertThat(saved.getPasswordHash()).isNotEqualTo("StrongPass123!");
         assertThat(saved.getPasswordHash()).startsWith("$2");
@@ -67,9 +71,7 @@ class UserServiceTest {
     void register_throwsWhenEmailIsDuplicate() {
         when(userRepository.existsByEmail("asha@example.com")).thenReturn(true);
 
-        RegisterRequest request = new RegisterRequest("Asha Rao", "Asha@Example.com", "StrongPass123!");
-
-        assertThatThrownBy(() -> userService.register(request))
+        assertThatThrownBy(() -> userService.register(request("8000000001")))
                 .isInstanceOf(DuplicateResourceException.class)
                 .hasMessage("Email is already registered");
     }
@@ -79,11 +81,20 @@ class UserServiceTest {
         when(userRepository.existsByEmail("asha@example.com")).thenReturn(false);
         when(userRepository.existsByFullName("Asha Rao")).thenReturn(true);
 
-        RegisterRequest request = new RegisterRequest("Asha Rao", "Asha@Example.com", "StrongPass123!");
-
-        assertThatThrownBy(() -> userService.register(request))
+        assertThatThrownBy(() -> userService.register(request("8000000001")))
                 .isInstanceOf(DuplicateResourceException.class)
                 .hasMessage("User name is already registered");
+    }
+
+    @Test
+    void register_throwsWhenPhoneIsDuplicate() {
+        when(userRepository.existsByEmail("asha@example.com")).thenReturn(false);
+        when(userRepository.existsByFullName("Asha Rao")).thenReturn(false);
+        when(userRepository.existsByPhone("8000000001")).thenReturn(true);
+
+        assertThatThrownBy(() -> userService.register(request("8000000001")))
+                .isInstanceOf(DuplicateResourceException.class)
+                .hasMessage("Phone number is already registered");
     }
 
     @Test

@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
@@ -27,6 +28,7 @@ import com.example.registration.service.UserService;
 
 @WebMvcTest(UserController.class)
 @Import(WebConfig.class)
+@AutoConfigureMockMvc(addFilters = false)
 class UserControllerTest {
 
     @Autowired
@@ -47,6 +49,7 @@ class UserControllerTest {
                                 {
                                   "fullName": "Asha Rao",
                                   "email": "asha@example.com",
+                                  "phone": "8000000001",
                                   "password": "StrongPass123!"
                                 }
                                 """))
@@ -65,6 +68,7 @@ class UserControllerTest {
                                 {
                                   "fullName": "",
                                   "email": "not-an-email",
+                                  "phone": "123",
                                   "password": "short"
                                 }
                                 """))
@@ -82,6 +86,7 @@ class UserControllerTest {
                                 {
                                   "fullName": "Asha Rao",
                                   "email": "asha@example.com",
+                                  "phone": "8000000001",
                                   "password": "StrongPass123!"
                                 }
                                 """))

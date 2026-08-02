@@ -26,6 +26,7 @@ public class UserService {
     public RegisterResponse register(RegisterRequest request) {
         String email = request.email().trim().toLowerCase();
         String userName = request.fullName().trim();
+        String phone = request.phone().trim();
 
         if (userRepository.existsByEmail(email)) {
             throw new DuplicateResourceException("Email is already registered");
@@ -33,10 +34,14 @@ public class UserService {
         if (userRepository.existsByFullName(userName)) {
             throw new DuplicateResourceException("User name is already registered");
         }
+        if (userRepository.existsByPhone(phone)) {
+            throw new DuplicateResourceException("Phone number is already registered");
+        }
 
         User user = new User();
         user.setFullName(userName);
         user.setEmail(email);
+        user.setPhone(phone);
         user.setRole(Role.CUSTOMER);
         user.setPasswordHash(passwordEncoder.encode(request.password()));
 
