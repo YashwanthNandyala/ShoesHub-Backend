@@ -9,6 +9,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.example.registration.repository.JwtTokenRepository;
 import com.example.registration.security.JwtAuthenticationFilter;
 import com.example.registration.security.JwtService;
 
@@ -17,8 +18,9 @@ import com.example.registration.security.JwtService;
 public class SecurityConfig {
 
     @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtService jwtService) {
-        return new JwtAuthenticationFilter(jwtService);
+    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtService jwtService,
+            JwtTokenRepository jwtTokenRepository) {
+        return new JwtAuthenticationFilter(jwtService, jwtTokenRepository);
     }
 
     @Bean

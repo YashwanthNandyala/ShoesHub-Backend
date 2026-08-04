@@ -1,6 +1,8 @@
 package com.example.registration.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -191,5 +193,33 @@ class AuthControllerTest {
                                 }
                                 """))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void logout_withBearerToken_returns200AndDeletesToken() throws Exception {
+        mockMvc.perform(post("/api/auth/logout")
+                        .header("Authorization", "Bearer jwt-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Logout successful"));
+
+        verify(authService).logout("jwt-token");
+    }
+
+    @Test
+    void logout_withoutBody_returns200() throws Exception {
+        mockMvc.perform(post("/api/auth/logout")
+                        .header("Authorization", "Bearer jwt-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Logout successful"));
+    }
+
+    @Test
+    void logout_withoutToken_returns401() throws Exception {
+        doThrow(new UnauthorizedException("Authentication required"))
+                .when(authService).logout(null);
+
+        mockMvc.perform(post("/api/auth/logout"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Authentication required"));
     }
 }

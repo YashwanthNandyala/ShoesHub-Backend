@@ -19,6 +19,8 @@ import com.example.registration.repository.JwtTokenRepository;
 import com.example.registration.repository.UserRepository;
 import com.example.registration.security.JwtService;
 
+import io.jsonwebtoken.JwtException;
+
 @Service
 public class AuthService {
 
@@ -74,5 +76,18 @@ public class AuthService {
 
         return new LoginResponse(token, "Bearer", expiresAtLocal, user.getId(),
                 user.getFullName(), user.getEmail(), user.getRole());
+    }
+
+    @Transactional
+    public void logout(String token) {
+        if (token == null || token.isBlank()) {
+            throw new UnauthorizedException("Authentication required");
+        }
+        try {
+            jwtService.parseToken(token);
+        } catch (JwtException | IllegalArgumentException ex) {
+            throw new UnauthorizedException("Invalid or expired token");
+        }
+        jwtTokenRepository.deleteByToken(token);
     }
 }

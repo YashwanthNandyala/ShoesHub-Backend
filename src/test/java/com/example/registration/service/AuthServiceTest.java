@@ -157,4 +157,44 @@ class AuthServiceTest {
         assertThat(LoginResponse.class.getDeclaredFields())
                 .noneMatch(field -> field.getName().equals("password") || field.getName().equals("passwordHash"));
     }
+
+    @Test
+    void logout_validToken_deletesStoredJwt() {
+        User user = userWithCredentials("asha@example.com", "8000000001", "Password@123");
+        String token = jwtService.generateToken(user);
+
+        authService.logout(token);
+
+        verify(jwtTokenRepository).deleteByToken(token);
+    }
+
+    @Test
+    void logout_blankToken_throwsUnauthorized() {
+        assertThatThrownBy(() -> authService.logout(""))
+                .isInstanceOf(UnauthorizedException.class)
+                .hasMessage("Authentication required");
+
+        assertThatThrownBy(() -> authService.logout(null))
+                .isInstanceOf(UnauthorizedException.class)
+                .hasMessage("Authentication required");
+    }
+
+    @Test
+    void logout_invalidToken_throwsUnauthorized() {
+        assertThatThrownBy(() -> authService.logout("not-a-jwt-token"))
+                .isInstanceOf(UnauthorizedException.class)
+                .hasMessage("Invalid or expired token");
+    }
+
+    @Test
+    void logout_expiredToken_throwsUnauthorized() {
+        JwtService expiredIssuer = new JwtService(
+                "test-secret-key-that-is-long-enough-for-hs256-0123456789", -1);
+        User user = userWithCredentials("asha@example.com", "8000000001", "Password@123");
+        String expiredToken = expiredIssuer.generateToken(user);
+
+        assertThatThrownBy(() -> authService.logout(expiredToken))
+                .isInstanceOf(UnauthorizedException.class)
+                .hasMessage("Invalid or expired token");
+    }
 }
