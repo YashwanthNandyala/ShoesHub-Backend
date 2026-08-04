@@ -9,4 +9,6 @@ import com.example.registration.entity.Product;
 public interface ProductRepository extends JpaRepository<Product, Integer> {
 
     List<Product> findAllByOrderByNameAsc();
+
+    List<Product> findByNameIgnoreCase(String name);
 }
