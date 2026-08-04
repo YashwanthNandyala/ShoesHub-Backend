@@ -92,6 +92,12 @@ public class CartService {
         cartItemRepository.delete(cartItem);
     }
 
+    @Transactional
+    public void clearCart() {
+        User user = currentUser();
+        cartItemRepository.deleteByUser_Id(user.getId());
+    }
+
     @Transactional(readOnly = true)
     public CartResponse getCart() {
         User user = currentUser();
