@@ -1,5 +1,4 @@
 target/  
-src/main/resources/application.yml 
 app.log
 app.err.log
 boot.log
